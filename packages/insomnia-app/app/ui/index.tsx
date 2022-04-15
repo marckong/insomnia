@@ -16,6 +16,8 @@ import App from './containers/app';
 import { init as initStore } from './redux/modules';
 
 import './css/index.less'; // this import must come after `App`.  the reason is not yet known.
+import { ModalProvider } from './components/modal/modal-context';
+import { ModalManager } from './components/modal/modal-manager';
 
 initializeLogging();
 // Handy little helper
@@ -39,7 +41,10 @@ document.title = getAppLongName();
   const render = App => {
     ReactDOM.render(
       <Provider store={store}>
-        <App />
+        <ModalProvider>
+          <ModalManager />
+          <App />
+        </ModalProvider>
       </Provider>,
       document.getElementById('root'),
     );

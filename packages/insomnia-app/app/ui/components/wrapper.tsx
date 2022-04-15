@@ -34,6 +34,8 @@ import { GrpcDispatchModalWrapper } from '../context/grpc';
 import { DropdownButton } from './base/dropdown/dropdown-button';
 import GitSyncDropdown from './dropdowns/git-sync-dropdown';
 import { ErrorBoundary } from './error-boundary';
+import { ModalContext } from './modal/modal-context';
+import { SomeComponent } from './modal/some-component';
 import { AddKeyCombinationModal } from './modals/add-key-combination-modal';
 import { AlertModal } from './modals/alert-modal';
 import { AnalyticsModal } from './modals/analytics-modal';
@@ -142,6 +144,9 @@ const requestUpdate = (request: Request, patch: Partial<Request>) => {
 
 @autoBindMethodsForReact(AUTOBIND_CFG)
 export class Wrapper extends PureComponent<WrapperProps, State> {
+  // static contextType: React.ContextType<typeof ModalContext> = ModalContext;
+  static contextType?: React.Context<any> | undefined = ModalContext;
+
   state: State = {
     forceRefreshKey: Date.now(),
     activeGitBranch: 'no-vcs',
@@ -436,6 +441,16 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
     });
   }
 
+  _handleShow(): void {
+    this.context.showModal({
+      component: SomeComponent,
+    });
+  }
+
+  _handleClose(): void {
+    this.context.hideModal();
+  }
+
   render() {
     const {
       activeCookieJar,
@@ -619,35 +634,38 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
           )}
 
           {activeActivity === ACTIVITY_DEBUG && (
-            <WrapperDebug
-              forceRefreshKey={this.state.forceRefreshKey}
-              gitSyncDropdown={gitSyncDropdown}
-              handleActivityChange={this._handleWorkspaceActivityChange}
-              handleChangeEnvironment={this._handleChangeEnvironment}
-              handleDeleteResponse={this._handleDeleteResponse}
-              handleDeleteResponses={this._handleDeleteResponses}
-              handleForceUpdateRequest={this._handleForceUpdateRequest}
-              handleForceUpdateRequestHeaders={this._handleForceUpdateRequestHeaders}
-              handleImport={this._handleImport}
-              handleRequestCreate={this._handleCreateRequestInWorkspace}
-              handleRequestGroupCreate={this._handleCreateRequestGroupInWorkspace}
-              handleSendAndDownloadRequestWithActiveEnvironment={this._handleSendAndDownloadRequestWithActiveEnvironment}
-              handleSendRequestWithActiveEnvironment={this._handleSendRequestWithActiveEnvironment}
-              handleSetActiveResponse={this._handleSetActiveResponse}
-              handleSetPreviewMode={this._handleSetPreviewMode}
-              handleSetResponseFilter={this._handleSetResponseFilter}
-              handleShowRequestSettingsModal={this._handleShowRequestSettingsModal}
-              handleSidebarSort={handleSidebarSort}
-              handleUpdateRequestAuthentication={Wrapper._handleUpdateRequestAuthentication}
-              handleUpdateRequestBody={Wrapper._handleUpdateRequestBody}
-              handleUpdateRequestHeaders={Wrapper._handleUpdateRequestHeaders}
-              handleUpdateRequestMethod={Wrapper._handleUpdateRequestMethod}
-              handleUpdateRequestParameters={Wrapper._handleUpdateRequestParameters}
-              handleUpdateRequestUrl={Wrapper._handleUpdateRequestUrl}
-              handleUpdateSettingsUseBulkHeaderEditor={this._handleUpdateSettingsUseBulkHeaderEditor}
-              handleUpdateSettingsUseBulkParametersEditor={this._handleUpdateSettingsUseBulkParametersEditor}
-              wrapperProps={this.props}
-            />
+            <>
+              <button onClick={this._handleShow}>show</button>
+              <button onClick={this._handleClose}>close</button>
+              <WrapperDebug
+                forceRefreshKey={this.state.forceRefreshKey}
+                gitSyncDropdown={gitSyncDropdown}
+                handleActivityChange={this._handleWorkspaceActivityChange}
+                handleChangeEnvironment={this._handleChangeEnvironment}
+                handleDeleteResponse={this._handleDeleteResponse}
+                handleDeleteResponses={this._handleDeleteResponses}
+                handleForceUpdateRequest={this._handleForceUpdateRequest}
+                handleForceUpdateRequestHeaders={this._handleForceUpdateRequestHeaders}
+                handleImport={this._handleImport}
+                handleRequestCreate={this._handleCreateRequestInWorkspace}
+                handleRequestGroupCreate={this._handleCreateRequestGroupInWorkspace}
+                handleSendAndDownloadRequestWithActiveEnvironment={this._handleSendAndDownloadRequestWithActiveEnvironment}
+                handleSendRequestWithActiveEnvironment={this._handleSendRequestWithActiveEnvironment}
+                handleSetActiveResponse={this._handleSetActiveResponse}
+                handleSetPreviewMode={this._handleSetPreviewMode}
+                handleSetResponseFilter={this._handleSetResponseFilter}
+                handleShowRequestSettingsModal={this._handleShowRequestSettingsModal}
+                handleSidebarSort={handleSidebarSort}
+                handleUpdateRequestAuthentication={Wrapper._handleUpdateRequestAuthentication}
+                handleUpdateRequestBody={Wrapper._handleUpdateRequestBody}
+                handleUpdateRequestHeaders={Wrapper._handleUpdateRequestHeaders}
+                handleUpdateRequestMethod={Wrapper._handleUpdateRequestMethod}
+                handleUpdateRequestParameters={Wrapper._handleUpdateRequestParameters}
+                handleUpdateRequestUrl={Wrapper._handleUpdateRequestUrl}
+                handleUpdateSettingsUseBulkHeaderEditor={this._handleUpdateSettingsUseBulkHeaderEditor}
+                handleUpdateSettingsUseBulkParametersEditor={this._handleUpdateSettingsUseBulkParametersEditor}
+                wrapperProps={this.props}
+              /></>
           )}
         </Fragment>
       </Fragment>
