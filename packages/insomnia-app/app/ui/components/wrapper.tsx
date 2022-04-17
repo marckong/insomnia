@@ -43,6 +43,7 @@ import { AskModal } from './modals/ask-modal';
 import { CodePromptModal } from './modals/code-prompt-modal';
 import { CookiesModalFC } from './modals/cookies-modal';
 import { EnvironmentEditModal } from './modals/environment-edit-modal';
+// import { EnvironmentEditModal } from './modals/environment-edit-modal';
 import { ErrorModal } from './modals/error-modal';
 import { ExportRequestsModal } from './modals/export-requests-modal';
 import { FilterHelpModal } from './modals/filter-help-modal';
@@ -443,7 +444,7 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
 
   _handleShow(): void {
     this.context.showModal({
-      component: SomeComponent,
+      component: EnvironmentEditModal,
     });
   }
 
@@ -552,10 +553,10 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
               activateRequest={handleActivateRequest}
             />
 
-            <EnvironmentEditModal
+            {/* <EnvironmentEditModal
               ref={registerModal}
               onChange={models.requestGroup.update}
-            />
+            /> */}
 
             <GitRepositorySettingsModal ref={registerModal} />
 

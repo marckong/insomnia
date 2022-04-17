@@ -1464,7 +1464,7 @@ class App extends PureComponent<AppProps, State> {
     return (
       <KeydownBinder onKeydown={this._handleKeyDown}>
         <GrpcProvider>
-          <NunjucksEnabledProvider>
+          {/* <NunjucksEnabledProvider> */}
             <AppHooks />
 
             <div className="app" key={uniquenessKey}>
@@ -1521,7 +1521,7 @@ class App extends PureComponent<AppProps, State> {
               {/* Block all mouse activity by showing an overlay while dragging */}
               {this.state.showDragOverlay ? <div className="blocker-overlay" /> : null}
             </div>
-          </NunjucksEnabledProvider>
+          {/* </NunjucksEnabledProvider> */}
         </GrpcProvider>
       </KeydownBinder>
     );

@@ -18,6 +18,7 @@ import { init as initStore } from './redux/modules';
 import './css/index.less'; // this import must come after `App`.  the reason is not yet known.
 import { ModalProvider } from './components/modal/modal-context';
 import { ModalManager } from './components/modal/modal-manager';
+import { NunjucksEnabledProvider } from './context/nunjucks/nunjucks-enabled-context';
 
 initializeLogging();
 // Handy little helper
@@ -41,10 +42,12 @@ document.title = getAppLongName();
   const render = App => {
     ReactDOM.render(
       <Provider store={store}>
-        <ModalProvider>
-          <ModalManager />
-          <App />
-        </ModalProvider>
+        <NunjucksEnabledProvider>
+          <ModalProvider>
+            <ModalManager />
+            <App />
+          </ModalProvider>
+        </NunjucksEnabledProvider>
       </Provider>,
       document.getElementById('root'),
     );

@@ -7,18 +7,24 @@ import { ModalContext } from './modal-context';
 import { ModalHeader } from './modal-header';
 import * as styles from './styles';
 
-const Container = styled.div`
-  position: absolute;
-  ${styles.positionStyle}
-  padding: calc(1rem * 2.5);
-  z-index: 1000;
-`;
+const Container = styled.div({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  padding: 'var(--padding-lg)',
+  zIndex: 1000,
+});
 
-const Overlay = styled.div`
-  position: fixed;
-  ${styles.positionStyle}
-  z-index: -1;
-`;
+const Overlay = styled.div({
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  position: 'fixed',
+  zIndex: -1,
+});
 
 interface ModalContentWrapperProps {
     centered?: boolean;
