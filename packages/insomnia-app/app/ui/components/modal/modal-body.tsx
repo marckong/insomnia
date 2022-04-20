@@ -1,33 +1,35 @@
-import React, { FunctionComponent, HTMLAttributes, ReactNode } from 'react';
-import styled from 'styled-components';
+import React, { FunctionComponent, ReactNode } from 'react';
+import styled, { css } from 'styled-components';
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
+export interface ModalBodyProps {
   noScroll?: boolean;
   children?: ReactNode;
 }
 
-// export const ModalBody: FC<Props> = memo(({ className, children, noScroll, ...props }) => {
-//   const classes = classnames(className, 'modal__body theme--dialog__body', {
-//     'modal__body--no-scroll': noScroll,
-//   });
-//   return (
-//     <div className={classes} {...props}>
-//       {children}
-//     </div>
-//   );
-// });
-
 const ModalBodyWrapper = styled.div`
-    overflow: auto;
-    min-height: 2rem;
-    box-sizing: border-box;
-    max-width: 100%;
-    background-color: var(--color-bg);
-    color: var(--color-font);
+  ${props => {
+    const baseStyles = css`
+        overflow: auto;
+        min-height: 2rem;
+        box-sizing: border-box;
+        max-width: 100%;
+        background-color: ${props.theme.colors.bg};
+        color: ${props.theme.colors.font};
+    `;
+
+    if (props.noScroll) {
+      baseStyles.concat(css`
+        overflow: visible;
+        height: 100%;
+      `);
+    }
+
+    return baseStyles;
+  }}
 `;
 
-export const ModalBody: FunctionComponent<Props> = ({ children, noScroll, ...otherProps }) => {
+export const ModalBody: FunctionComponent<ModalBodyProps> = ({ children, noScroll }) => {
   return (
-    <ModalBodyWrapper {...otherProps}>{children}</ModalBodyWrapper>
+    <ModalBodyWrapper {...{ noScroll }}>{children}</ModalBodyWrapper>
   );
 };

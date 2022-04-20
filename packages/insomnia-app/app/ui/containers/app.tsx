@@ -79,7 +79,6 @@ import { Toast } from '../components/toast';
 import { Wrapper } from '../components/wrapper';
 import withDragDropContext from '../context/app/drag-drop-context';
 import { GrpcProvider } from '../context/grpc';
-import { NunjucksEnabledProvider } from '../context/nunjucks/nunjucks-enabled-context';
 import { RootState } from '../redux/modules';
 import { initialize } from '../redux/modules/entities';
 import {
@@ -1465,62 +1464,62 @@ class App extends PureComponent<AppProps, State> {
       <KeydownBinder onKeydown={this._handleKeyDown}>
         <GrpcProvider>
           {/* <NunjucksEnabledProvider> */}
-            <AppHooks />
+          <AppHooks />
 
-            <div className="app" key={uniquenessKey}>
-              <ErrorBoundary showAlert>
-                <Wrapper
-                  ref={this._setWrapperRef}
-                  {...this.props}
-                  paneWidth={paneWidth}
-                  paneHeight={paneHeight}
-                  sidebarWidth={sidebarWidth}
-                  handleCreateRequestForWorkspace={this._requestCreateForWorkspace}
-                  handleSetRequestPinned={this._handleSetRequestPinned}
-                  handleSetRequestGroupCollapsed={this._handleSetRequestGroupCollapsed}
-                  handleActivateRequest={this._handleSetActiveRequest}
-                  requestPaneRef={this._requestPaneRef}
-                  responsePaneRef={this._responsePaneRef}
-                  sidebarRef={this._sidebarRef}
-                  handleStartDragSidebar={this._startDragSidebar}
-                  handleResetDragSidebar={this._resetDragSidebar}
-                  handleStartDragPaneHorizontal={this._startDragPaneHorizontal}
-                  handleStartDragPaneVertical={this._startDragPaneVertical}
-                  handleResetDragPaneHorizontal={this._resetDragPaneHorizontal}
-                  handleResetDragPaneVertical={this._resetDragPaneVertical}
-                  handleCreateRequest={this._requestCreate}
-                  handleDuplicateRequest={this._requestDuplicate}
-                  handleDuplicateRequestGroup={App._requestGroupDuplicate}
-                  handleCreateRequestGroup={this._requestGroupCreate}
-                  handleGenerateCode={App._handleGenerateCode}
-                  handleGenerateCodeForActiveRequest={this._handleGenerateCodeForActiveRequest}
-                  handleCopyAsCurl={this._handleCopyAsCurl}
-                  handleSetResponsePreviewMode={this._handleSetResponsePreviewMode}
-                  handleSetResponseFilter={this._handleSetResponseFilter}
-                  handleSendRequestWithEnvironment={this._handleSendRequestWithEnvironment}
-                  handleSendAndDownloadRequestWithEnvironment={
-                    this._handleSendAndDownloadRequestWithEnvironment
-                  }
-                  handleSetActiveResponse={this._handleSetActiveResponse}
-                  handleSetActiveEnvironment={this._handleSetActiveEnvironment}
-                  handleSetSidebarFilter={this._handleSetSidebarFilter}
-                  handleUpdateRequestMimeType={this._handleUpdateRequestMimeType}
-                  handleShowSettingsModal={App._handleShowSettingsModal}
-                  handleUpdateDownloadPath={this._handleUpdateDownloadPath}
-                  headerEditorKey={forceRefreshHeaderCounter + ''}
-                  handleSidebarSort={this._sortSidebar}
-                  vcs={vcs}
-                  gitVCS={gitVCS}
-                />
-              </ErrorBoundary>
+          <div className="app" key={uniquenessKey}>
+            <ErrorBoundary showAlert>
+              <Wrapper
+                ref={this._setWrapperRef}
+                {...this.props}
+                paneWidth={paneWidth}
+                paneHeight={paneHeight}
+                sidebarWidth={sidebarWidth}
+                handleCreateRequestForWorkspace={this._requestCreateForWorkspace}
+                handleSetRequestPinned={this._handleSetRequestPinned}
+                handleSetRequestGroupCollapsed={this._handleSetRequestGroupCollapsed}
+                handleActivateRequest={this._handleSetActiveRequest}
+                requestPaneRef={this._requestPaneRef}
+                responsePaneRef={this._responsePaneRef}
+                sidebarRef={this._sidebarRef}
+                handleStartDragSidebar={this._startDragSidebar}
+                handleResetDragSidebar={this._resetDragSidebar}
+                handleStartDragPaneHorizontal={this._startDragPaneHorizontal}
+                handleStartDragPaneVertical={this._startDragPaneVertical}
+                handleResetDragPaneHorizontal={this._resetDragPaneHorizontal}
+                handleResetDragPaneVertical={this._resetDragPaneVertical}
+                handleCreateRequest={this._requestCreate}
+                handleDuplicateRequest={this._requestDuplicate}
+                handleDuplicateRequestGroup={App._requestGroupDuplicate}
+                handleCreateRequestGroup={this._requestGroupCreate}
+                handleGenerateCode={App._handleGenerateCode}
+                handleGenerateCodeForActiveRequest={this._handleGenerateCodeForActiveRequest}
+                handleCopyAsCurl={this._handleCopyAsCurl}
+                handleSetResponsePreviewMode={this._handleSetResponsePreviewMode}
+                handleSetResponseFilter={this._handleSetResponseFilter}
+                handleSendRequestWithEnvironment={this._handleSendRequestWithEnvironment}
+                handleSendAndDownloadRequestWithEnvironment={
+                  this._handleSendAndDownloadRequestWithEnvironment
+                }
+                handleSetActiveResponse={this._handleSetActiveResponse}
+                handleSetActiveEnvironment={this._handleSetActiveEnvironment}
+                handleSetSidebarFilter={this._handleSetSidebarFilter}
+                handleUpdateRequestMimeType={this._handleUpdateRequestMimeType}
+                handleShowSettingsModal={App._handleShowSettingsModal}
+                handleUpdateDownloadPath={this._handleUpdateDownloadPath}
+                headerEditorKey={forceRefreshHeaderCounter + ''}
+                handleSidebarSort={this._sortSidebar}
+                vcs={vcs}
+                gitVCS={gitVCS}
+              />
+            </ErrorBoundary>
 
-              <ErrorBoundary showAlert>
-                <Toast />
-              </ErrorBoundary>
+            <ErrorBoundary showAlert>
+              <Toast />
+            </ErrorBoundary>
 
-              {/* Block all mouse activity by showing an overlay while dragging */}
-              {this.state.showDragOverlay ? <div className="blocker-overlay" /> : null}
-            </div>
+            {/* Block all mouse activity by showing an overlay while dragging */}
+            {this.state.showDragOverlay ? <div className="blocker-overlay" /> : null}
+          </div>
           {/* </NunjucksEnabledProvider> */}
         </GrpcProvider>
       </KeydownBinder>

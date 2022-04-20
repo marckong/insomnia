@@ -16,9 +16,11 @@ import App from './containers/app';
 import { init as initStore } from './redux/modules';
 
 import './css/index.less'; // this import must come after `App`.  the reason is not yet known.
-import { ModalProvider } from './components/modal/modal-context';
-import { ModalManager } from './components/modal/modal-manager';
+import { ModalProvider, ModalManager } from './components/modal';
 import { NunjucksEnabledProvider } from './context/nunjucks/nunjucks-enabled-context';
+
+import { theme } from './context/theme/with-theme';
+import { ThemeProvider } from 'styled-components';
 
 initializeLogging();
 // Handy little helper
@@ -42,12 +44,13 @@ document.title = getAppLongName();
   const render = App => {
     ReactDOM.render(
       <Provider store={store}>
-        <NunjucksEnabledProvider>
-          <ModalProvider>
-            <ModalManager />
-            <App />
-          </ModalProvider>
-        </NunjucksEnabledProvider>
+        <ThemeProvider theme={theme}>
+          <NunjucksEnabledProvider>
+            <ModalProvider>
+              <App />
+            </ModalProvider>
+          </NunjucksEnabledProvider>
+        </ThemeProvider>
       </Provider>,
       document.getElementById('root'),
     );

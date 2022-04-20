@@ -1,15 +1,21 @@
-import classnames from 'classnames';
-import React, { FC, memo, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
+import styled, { css } from 'styled-components';
 
-interface Props {
-  className?: string;
-  children: ReactNode;
-}
+const ModalFooterWrapper = styled.div`
+    ${props => css`
+        border-top: 1px solid var(--hl-sm);
+        background-color: ${props.theme.colors.bg};
+        color: ${props.theme.colors.font};
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1px;
+    `}
+`;
 
-export const ModalFooter: FC<Props> = memo(({ children, className }) => (
-  <div className={classnames('modal__footer theme--dialog__footer', className)}>
-    {children}
-  </div>
-));
-
-ModalFooter.displayName = 'ModalFooter';
+export const ModalFooter: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
+  return (
+    <ModalFooterWrapper>{children}</ModalFooterWrapper>
+  );
+};

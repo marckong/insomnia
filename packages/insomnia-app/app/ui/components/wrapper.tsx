@@ -34,6 +34,7 @@ import { GrpcDispatchModalWrapper } from '../context/grpc';
 import { DropdownButton } from './base/dropdown/dropdown-button';
 import GitSyncDropdown from './dropdowns/git-sync-dropdown';
 import { ErrorBoundary } from './error-boundary';
+import { ModalManager } from './modal';
 import { ModalContext } from './modal/modal-context';
 import { SomeComponent } from './modal/some-component';
 import { AddKeyCombinationModal } from './modals/add-key-combination-modal';
@@ -42,7 +43,7 @@ import { AnalyticsModal } from './modals/analytics-modal';
 import { AskModal } from './modals/ask-modal';
 import { CodePromptModal } from './modals/code-prompt-modal';
 import { CookiesModalFC } from './modals/cookies-modal';
-import { EnvironmentEditModal } from './modals/environment-edit-modal';
+import { EnvironmentEditModal, EnvironmentsEditModal } from './modals/environment-edit-modal';
 // import { EnvironmentEditModal } from './modals/environment-edit-modal';
 import { ErrorModal } from './modals/error-modal';
 import { ExportRequestsModal } from './modals/export-requests-modal';
@@ -444,7 +445,12 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
 
   _handleShow(): void {
     this.context.showModal({
-      component: EnvironmentEditModal,
+      component: EnvironmentsEditModal,
+      props: {
+        handleChangeEnvironment: this._handleChangeEnvironment.bind(this),
+        activeEnvironmentId: this.props.activeEnvironment?._id,
+        activeWorkspace: this.props.activeWorkspace,
+      },
     });
   }
 
@@ -495,6 +501,7 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
       <Fragment>
         <div key="modals" className="modals">
           <ErrorBoundary showAlert>
+            <ModalManager />
             <AnalyticsModal />
             <AlertModal ref={registerModal} />
             <ErrorModal ref={registerModal} />
