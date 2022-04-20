@@ -12,12 +12,14 @@ import { strings } from './strings';
 export interface HotKeyDefinition {
   id: string;
   description: string;
+  excludes: string[];
 }
 
-function defineHotKey(id: string, description: string): HotKeyDefinition {
+function defineHotKey(id: string, description: string, excludes: string[] = []): HotKeyDefinition {
   return {
-    id: id,
-    description: description,
+    id,
+    description,
+    excludes,
   };
 }
 
@@ -79,7 +81,7 @@ export const hotKeyRefs: Record<string, HotKeyDefinition> = {
   ),
   PLUGIN_RELOAD: defineHotKey('plugin_reload', 'Reload Plugins'),
   SHOW_AUTOCOMPLETE: defineHotKey('showAutocomplete', 'Show Autocomplete'),
-  REQUEST_SEND: defineHotKey('request_send', 'Send Request'),
+  REQUEST_SEND: defineHotKey('request_send', 'Send Request', ['EnvironmentEditor']),
   REQUEST_SHOW_OPTIONS: defineHotKey('request_showOptions', 'Send Request (Options)'),
   ENVIRONMENT_SHOW_EDITOR: defineHotKey('environment_showEditor', 'Show Environment Editor'),
   ENVIRONMENT_SHOW_SWITCH_MENU: defineHotKey('environment_showSwitchMenu', 'Switch Environments'),
