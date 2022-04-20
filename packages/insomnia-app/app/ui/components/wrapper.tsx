@@ -36,15 +36,12 @@ import GitSyncDropdown from './dropdowns/git-sync-dropdown';
 import { ErrorBoundary } from './error-boundary';
 import { ModalManager } from './modal';
 import { ModalContext } from './modal/modal-context';
-import { SomeComponent } from './modal/some-component';
 import { AddKeyCombinationModal } from './modals/add-key-combination-modal';
 import { AlertModal } from './modals/alert-modal';
 import { AnalyticsModal } from './modals/analytics-modal';
 import { AskModal } from './modals/ask-modal';
 import { CodePromptModal } from './modals/code-prompt-modal';
 import { CookiesModalFC } from './modals/cookies-modal';
-import { EnvironmentEditModal, EnvironmentsEditModal } from './modals/environment-edit-modal';
-// import { EnvironmentEditModal } from './modals/environment-edit-modal';
 import { ErrorModal } from './modals/error-modal';
 import { ExportRequestsModal } from './modals/export-requests-modal';
 import { FilterHelpModal } from './modals/filter-help-modal';
@@ -75,6 +72,7 @@ import { SyncHistoryModal } from './modals/sync-history-modal';
 import { SyncMergeModal } from './modals/sync-merge-modal';
 import { SyncStagingModal } from './modals/sync-staging-modal';
 import { WorkspaceDuplicateModal } from './modals/workspace-duplicate-modal';
+import { WorkspaceEnvironmentsEditModalRe } from './modals/workspace-environment-edit-modal-re';
 import { WorkspaceEnvironmentsEditModal } from './modals/workspace-environments-edit-modal';
 import { WorkspaceSettingsModal } from './modals/workspace-settings-modal';
 import { WrapperModal } from './modals/wrapper-modal';
@@ -445,7 +443,7 @@ export class Wrapper extends PureComponent<WrapperProps, State> {
 
   _handleShow(): void {
     this.context.showModal({
-      component: EnvironmentsEditModal,
+      component: WorkspaceEnvironmentsEditModalRe,
       props: {
         handleChangeEnvironment: this._handleChangeEnvironment.bind(this),
         activeEnvironmentId: this.props.activeEnvironment?._id,
