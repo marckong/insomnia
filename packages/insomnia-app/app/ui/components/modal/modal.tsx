@@ -1,7 +1,6 @@
 /* eslint-disable react/function-component-definition */
 import React, { Children, cloneElement, isValidElement, ReactElement, ReactNode, useContext } from 'react';
 import styled, { css } from 'styled-components';
-import { RequireAtLeastOne } from 'type-fest';
 
 import { ModalBody } from './modal-body';
 import { ModalContext } from './modal-context';
@@ -82,7 +81,8 @@ function mapChildren(children: ReactNode, onClose: () => void): ReactElement[] {
     .filter(isValidElement)
     .reduce<ReactElement[]>((arr: ReactElement[], component: ReactElement) => {
       if (component.type === ModalHeader) {
-        arr[0] = cloneElement(component, { ...component.props, onClose });
+        const componentWithOnClose = cloneElement(<component.type />, { ...component.props, onClose });
+        arr[0] = componentWithOnClose;
       } else if (component.type === ModalBody) {
         arr[1] = component;
       } else if (component.type === ModalFooter) {
@@ -94,23 +94,16 @@ function mapChildren(children: ReactNode, onClose: () => void): ReactElement[] {
 }
 
 interface ModalProps extends ModalContentWrapperProps, ModalContentProps {
+  onClose(): void;
+  children: ReactNode;
+  closeOnKeyCodes?: any[];
   noEscape?: boolean;
   dontFocus?: boolean;
-  controlled?: boolean;
-  onClose?(): void;
-  closeOnKeyCodes?: any[];
-  children: ReactNode;
 }
 
-function Modal({ centered, tall, wide, skinny, onClose, controlled, children }: RequireAtLeastOne<ModalProps, 'controlled' | 'onClose'>): ReactElement {
-  const { hideModal } = useContext(ModalContext);
-
+function BaseModal({ centered, tall, wide, skinny, onClose, children }: ModalProps): ReactElement {
   const handleOverlayClick = () => {
-    if (controlled && onClose) {
-      onClose();
-      return;
-    }
-    hideModal();
+    onClose();
   };
 
   const [header, body, footer] = mapChildren(children, handleOverlayClick);
@@ -127,7 +120,15 @@ function Modal({ centered, tall, wide, skinny, onClose, controlled, children }: 
     </Container>
   );
 }
+
+export const UncontrolledModal = Object.assign(BaseModal, { Header: ModalHeader, Body: ModalBody, Footer: ModalFooter });
+function Modal(props: Omit<ModalProps, 'onClose'>): ReactElement {
+  const { hideModal: onClose } = useContext(ModalContext);
+  return <BaseModal { ...props} onClose={onClose} />;
+}
+
 Modal.Header = ModalHeader;
 Modal.Body = ModalBody;
 Modal.Footer = ModalFooter;
+
 export { Modal };

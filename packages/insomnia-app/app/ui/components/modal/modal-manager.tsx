@@ -48,5 +48,5 @@ export const ModalManager = () => {
   }
 
   const { component: ModalInstance, props: modalProps } = composition;
-  return <ModalInstance {...modalProps} onClose={() => setComposition(null)} />;
+  return <ModalInstance {...modalProps} />;
 };
