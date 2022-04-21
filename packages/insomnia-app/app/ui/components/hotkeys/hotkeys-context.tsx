@@ -1,55 +1,101 @@
 import { EventEmitter } from 'events';
-import React, { createContext, FunctionComponent, PropsWithChildren, useCallback, useEffect, useMemo } from 'react';
+import { KeyCombination } from 'insomnia-common';
+import React, { createContext, FunctionComponent, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
-import { pressedHotKey } from '../../../common/hotkeys-listener';
+import { areSameKeyCombinations, getPlatformKeyCombinations, HotKeyDefinition, hotKeyRefs } from '../../../common/hotkeys';
+import * as models from '../../../models';
+import { Settings } from '../../../models/settings';
 
+const HOTKEY_EVENT_TAG = 'HOTKEY_EVENT_TAG';
+const hotkeyEvent = new EventEmitter();
 interface UseHotKeysContext {
     sendHotkeyEvent(command: string, condition: string): void;
-    checkIfHotKeyPressed(e: KeyboardEvent): any;
-}
-export const HotKeysContext = createContext<UseHotKeysContext>({
+    checkIfHotKeyPressed(e: KeyboardEvent, definitions: Record<string, HotKeyDefinition>): Promise<any>;
+
+  }
+const HotKeysContext = createContext<UseHotKeysContext>({
   sendHotkeyEvent: () => {},
-  checkIfHotKeyPressed: () => {},
+  checkIfHotKeyPressed: async () => {},
 });
 
-type Props = PropsWithChildren<{
-    keyMap: [any, Function][];
-}>;
+interface Props {
+  children: ReactNode;
+}
 
-export const HOTKEY_EVENT_TAG = 'HOTKEY_EVENT_TAG';
-export const HotKeysProvider: FunctionComponent<Props> = ({ keyMap, children }) => {
-  const hotkeyEvent = useMemo(() => new EventEmitter(), []);
-
-  const sendHotkeyEvent = useCallback((hotkeyId: string, targetItentifier: string) => {
-    hotkeyEvent.emit(HOTKEY_EVENT_TAG, { hotkeyId, targetItentifier });
-  }, [hotkeyEvent]);
-
-  const checkIfHotKeyPressed = useCallback(async (e: KeyboardEvent) => {
-    for (const [definition] of keyMap) {
-      const pressed = await pressedHotKey(e, definition);
-      if (pressed) {
-        return definition;
-      }
-    }
-  }, [keyMap]);
+export function useHotKeysListener<T extends HTMLElement>(target: T, allowOnlyGlobal = false, origin = 'local'): void {
+  const { sendHotkeyEvent, checkIfHotKeyPressed } = useContext(HotKeysContext);
 
   useEffect(() => {
-    const listener = e => {
-      console.log(e);
-      const keyDefinition = keyMap.find(key => (key[0].id === e.hotkeyId && !key[0].excludes.includes(e.targetItentifier)));
-      if (keyDefinition) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_id, callback] = keyDefinition;
-        callback?.();
+    const listener = async (e: KeyboardEvent) => {
+      const result = await checkIfHotKeyPressed(e, hotKeyRefs);
+      if (result) {
+        sendHotkeyEvent(result.id, allowOnlyGlobal && e.target === e.currentTarget ? 'global' : origin);
       }
     };
+    target.addEventListener('keydown', listener);
+    return () => target.removeEventListener('keydown', listener);
+  }, [target, sendHotkeyEvent, checkIfHotKeyPressed, allowOnlyGlobal, origin]);
+}
 
-    hotkeyEvent.on(HOTKEY_EVENT_TAG, listener);
+// TODO: define return type and event type
+export function useSubscriptionToHotKeys(handler: (event: any) => void) {
+  useEffect(() => {
+    hotkeyEvent.on(HOTKEY_EVENT_TAG, handler);
 
     return () => {
-      hotkeyEvent.off(HOTKEY_EVENT_TAG, listener);
+      hotkeyEvent.off(HOTKEY_EVENT_TAG, handler);
     };
-  }, [hotkeyEvent, keyMap]);
+  }, [handler]);
+}
+
+function useHotKeysRegistry() {
+  const [registry, setRegistry] = useState({});
+  useEffect(() => {
+    async function resolveModels() {
+      const settingsResolved: Settings = await models.settings.getOrCreate();
+      setRegistry(settingsResolved.hotKeyRegistry);
+    }
+
+    resolveModels();
+  }, []);
+
+  return registry;
+}
+
+export const HotKeysProvider: FunctionComponent<Props> = ({ children }) => {
+  const registry = useHotKeysRegistry();
+  const sendHotkeyEvent = useCallback((hotkeyId: string, targetItentifier: string) => {
+    hotkeyEvent.emit(HOTKEY_EVENT_TAG, { hotkeyId, targetItentifier });
+  }, []);
+
+  const checkIfHotKeyPressed = useCallback((e: KeyboardEvent, definitions: Record<string, HotKeyDefinition>): any => {
+    function pressedHotKey(event: KeyboardEvent, definition: HotKeyDefinition) {
+      const pressedKeyComb: KeyCombination = {
+        ctrl: event.ctrlKey,
+        alt: event.altKey,
+        shift: event.shiftKey,
+        meta: event.metaKey,
+        // keyCode is deprecated. we may refactor this in the soon future
+        keyCode: event.keyCode,
+      };
+
+      const keyCombList = getPlatformKeyCombinations(registry[definition.id]);
+      for (const keyComb of keyCombList) {
+        if (areSameKeyCombinations(pressedKeyComb, keyComb)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    const pressed = Object.values(definitions).find(def => pressedHotKey(e, def));
+    if (pressed) {
+      return pressed;
+    }
+
+    return false;
+  }, [registry]);
 
   return (
     <HotKeysContext.Provider value={{ sendHotkeyEvent, checkIfHotKeyPressed }}>{children}</HotKeysContext.Provider>
