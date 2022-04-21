@@ -10,11 +10,11 @@ export interface ModalComposition {
 export const ModalManager = () => {
   const [composition, setComposition] = useState<ModalComposition | null>();
 
-  const { $onModal } = useContext(ModalContext);
+  const { $onModal, hideModal: onClose } = useContext(ModalContext);
 
   useEffect(() => {
-    const handler = (e: ModalComposition | null) => {
-      setComposition(e);
+    const handler = (instance: ModalComposition | null) => {
+      setComposition(instance ? { component: instance.component, props: { ...instance.props, onClose } } : instance);
     };
 
     $onModal.on(MODAL_TRIGGER, handler);
@@ -22,7 +22,7 @@ export const ModalManager = () => {
     return () => {
       $onModal.off(MODAL_TRIGGER, handler);
     };
-  }, [$onModal]);
+  }, [$onModal, onClose]);
 
   useEffect(() => {
     const body = document.body;

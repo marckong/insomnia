@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 
 export interface Props {
   children: ReactNode;
+  onClose?(): void;
   hideCloseButton?: boolean;
 }
 
@@ -51,12 +52,12 @@ const ModalCloseButton = styled.button`
   }}
 `;
 
-export const ModalHeader: FunctionComponent<Props> = ({ hideCloseButton, children }) => {
+export const ModalHeader: FunctionComponent<Props> = ({ onClose, hideCloseButton, children }) => {
   return (
     <ModalHeaderWrapper>
       <ModalHeaderContent>{children}</ModalHeaderContent>
       {!hideCloseButton && (
-        <ModalCloseButton type="button">
+        <ModalCloseButton type="button" onClick={onClose}>
           <i className="fa fa-times" />
         </ModalCloseButton>
       )}

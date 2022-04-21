@@ -1,6 +1,7 @@
 /* eslint-disable react/function-component-definition */
-import React, { Children, isValidElement, ReactElement, ReactNode, useContext } from 'react';
+import React, { Children, cloneElement, isValidElement, ReactElement, ReactNode, useContext } from 'react';
 import styled, { css } from 'styled-components';
+import { RequireAtLeastOne } from 'type-fest';
 
 import { ModalBody } from './modal-body';
 import { ModalContext } from './modal-context';
@@ -27,10 +28,16 @@ const Overlay = styled.div`
     z-index: -1;
 `;
 
-const ContentWrapper = styled.div`
-  ${props => {
+interface ModalContentWrapperProps {
+    centered?: boolean;
+    wide?: boolean;
+    skinny?: boolean;
+}
+// TODO: verify performance impact of the below expression
+const ContentWrapper = styled.div<ModalContentWrapperProps>`
+  ${({ theme, wide, skinny, centered }) => {
     const baseStyles = css`
-        width: ${props.theme.modal.width};
+        width: ${theme.modal.width};
         height: 100%;
         max-width: 100%;
         max-height: 100%;
@@ -38,19 +45,19 @@ const ContentWrapper = styled.div`
         pointer-events: none;
     `;
 
-    if (props.wide) {
+    if (wide) {
       baseStyles.concat(css`
-        width: ${props.theme.modal.widthWide}
+        width: ${theme.modal.widthWide}
       `);
     }
 
-    if (props.skinny) {
+    if (skinny) {
       baseStyles.concat(css`
-        width: ${props.theme.modal.widthSkinny}
+        width: ${theme.modal.widthSkinny}
       `);
     }
 
-    if (props.centered) {
+    if (centered) {
       baseStyles.concat(css`
         display: flex;
         align-items: center;
@@ -61,27 +68,21 @@ const ContentWrapper = styled.div`
   }}
 `;
 
-interface ModalContentWrapperProps {
-    centered?: boolean;
-    wide?: boolean;
-    skinny?: boolean;
-}
-
 interface ModalContentProps {
     tall?: boolean;
 }
-const Content = styled.div`
+const Content = styled.div<ModalContentProps>`
   ${styles.contentBaseStyle}
-  ${(props: ModalContentProps) => (props.tall ? css`height: 100%;` : '')};
+  ${({ tall }) => (tall ? css`height: 100%;` : '')};
 `;
 
-function mapChildren(children: ReactNode): ReactElement[] {
+function mapChildren(children: ReactNode, onClose: () => void): ReactElement[] {
   return Children
     .toArray(children)
     .filter(isValidElement)
     .reduce<ReactElement[]>((arr: ReactElement[], component: ReactElement) => {
       if (component.type === ModalHeader) {
-        arr[0] = component;
+        arr[0] = cloneElement(component, { ...component.props, onClose });
       } else if (component.type === ModalBody) {
         arr[1] = component;
       } else if (component.type === ModalFooter) {
@@ -95,17 +96,24 @@ function mapChildren(children: ReactNode): ReactElement[] {
 interface ModalProps extends ModalContentWrapperProps, ModalContentProps {
   noEscape?: boolean;
   dontFocus?: boolean;
+  controlled?: boolean;
+  onClose?(): void;
   closeOnKeyCodes?: any[];
   children: ReactNode;
 }
-function Modal({ centered, tall, wide, skinny, children }: ModalProps): ReactElement {
-  const [header, body, footer] = mapChildren(children);
+
+function Modal({ centered, tall, wide, skinny, onClose, controlled, children }: RequireAtLeastOne<ModalProps, 'controlled' | 'onClose'>): ReactElement {
   const { hideModal } = useContext(ModalContext);
 
   const handleOverlayClick = () => {
+    if (controlled && onClose) {
+      onClose();
+      return;
+    }
     hideModal();
   };
 
+  const [header, body, footer] = mapChildren(children, handleOverlayClick);
   return (
     <Container tabIndex={-1}>
       <Overlay onClick={handleOverlayClick} />

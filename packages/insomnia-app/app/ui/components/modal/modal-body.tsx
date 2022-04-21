@@ -6,18 +6,18 @@ export interface ModalBodyProps {
   children?: ReactNode;
 }
 
-const ModalBodyWrapper = styled.div`
-  ${props => {
+const ModalBodyWrapper = styled.div<{ noScroll?: boolean }>`
+  ${({ theme, noScroll }) => {
     const baseStyles = css`
         overflow: auto;
         min-height: 2rem;
         box-sizing: border-box;
         max-width: 100%;
-        background-color: ${props.theme.colors.bg};
-        color: ${props.theme.colors.font};
+        background-color: ${theme.colors.bg};
+        color: ${theme.colors.font};
     `;
 
-    if (props.noScroll) {
+    if (noScroll) {
       baseStyles.concat(css`
         overflow: visible;
         height: 100%;
