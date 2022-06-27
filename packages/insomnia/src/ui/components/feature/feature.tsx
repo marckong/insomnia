@@ -1,4 +1,4 @@
-import React, { Children, FunctionComponent, isValidElement, ReactElement, ReactNode } from 'react';
+import React, { Children, ComponentType, FunctionComponent, isValidElement, ReactElement, ReactNode } from 'react';
 
 import type { FeatureData } from './feature-context';
 import { useFeature } from './use-feature';
@@ -15,7 +15,7 @@ function checkVariant(variant: string): (element: ReactElement) => boolean {
   return (element: ReactElement) => element.type === FeatureVariant && element.props.variant === variant;
 }
 
-function getFeature(children: ReactNode, feature: FeatureData<string, string>): ReactElement[] {
+function getFeatureVariant(children: ReactNode, feature: FeatureData<string, string>): ReactElement[] {
   if (!feature?.isEnabled) {
     return [];
   }
@@ -26,22 +26,37 @@ function getFeature(children: ReactNode, feature: FeatureData<string, string>): 
     .filter(checkVariant(feature.variant));
 }
 
+const FeatureLoading: FunctionComponent = (): ReactElement => {
+  return <>loading...</>;
+};
+
+const FeatureError: FunctionComponent = (): ReactElement => {
+  return <>error...</>;
+};
+
 interface Props {
   name: string;
   children: ReactNode;
+  loading?: ComponentType;
+  error?: ComponentType;
 }
-const Feature: FunctionComponent<Props> = ({ name, children }): ReactElement | null => {
+const Feature: FunctionComponent<Props> = ({
+  name,
+  children,
+  loading: Loading = FeatureLoading,
+  error: Error = FeatureError,
+}): ReactElement | null => {
   const { data: feature, loading, error } = useFeature(name);
 
   if (loading) {
-    return <>'loading'</>;
+    return <Loading />;
   }
 
   if (error) {
-    return <>error</>;
+    return <Error />;
   }
 
-  const [variant] = getFeature(children, feature);
+  const [variant] = getFeatureVariant(children, feature);
   if (!variant) {
     return null;
   }

@@ -23,10 +23,15 @@ interface Props {
 }
 
 const FeatureProvider: FunctionComponent<Props> = ({ children }): ReactElement => {
+  // TODO: this should be coming from the persistence (db or optionally remote in the future)
   const [features, setFeatures] = useState<Record<string, FeatureData<string, string>>>({});
+
+  // TODO: this should be coming from the persistence (db or optionally remote in the future)
   const selectFeature = useCallback((feature: FeatureData<string, string>) => {
     setFeatures(s => ({ ...s, [feature.name]: feature }));
   }, []);
+
+  // TODO: this should be coming from the persistence (db or optionally remote in the future)
   const loadFeature = useCallback(async (name: string) => {
     return features[name];
   }, [features]);

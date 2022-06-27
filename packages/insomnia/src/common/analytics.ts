@@ -32,7 +32,7 @@ const getDeviceId = async () => {
   return settings.deviceId || (await models.settings.update(settings, { deviceId: uuidv4() })).deviceId;
 };
 
-const sendSegment = async function sendSegment<T extends 'track' | 'page'>(segmentType: T, options: Parameters<Analytics[T]>[0]) {
+export const sendSegment = async function sendSegment<T extends 'track' | 'page'>(segmentType: T, options: Parameters<Analytics[T]>[0]) {
   try {
     const anonymousId = await getDeviceId() ?? undefined;
     const userId = getAccountId();
@@ -75,6 +75,8 @@ export enum SegmentEvent {
   vcsSyncComplete = 'VCS Sync Completed',
   vcsAction = 'VCS Action Executed',
   buttonClick = 'Button Clicked',
+  featureToggling = 'Feature Toggling',
+  featureVariantSelecting = 'Feature Variant Selecting'
 }
 
 /**
@@ -82,7 +84,7 @@ export enum SegmentEvent {
  *
  * The following properties are custom defined attributes for our own metrics purpose to help ourselves to make product decisions
  */
-interface SegmentEventProperties {
+export interface SegmentEventProperties {
   type: string;
 
   /**

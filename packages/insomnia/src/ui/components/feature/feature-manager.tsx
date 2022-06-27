@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, ReactElement, useContext, useEffect, useState } from 'react';
 
+import { SegmentEvent, sendSegment } from '../../../common/analytics';
 import { FeatureContext } from './feature-context';
 
 const features = [
@@ -22,19 +23,37 @@ const FeatureCheckbox: FunctionComponent<Props> = ({ featureItem }): ReactElemen
   const { selectFeature } = useContext(FeatureContext);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEnabled = (_: ChangeEvent<HTMLInputElement>) => {
-    setEnabled(s => !s);
+    const isCurrentlyEnabled = enabled;
+    setEnabled(!isCurrentlyEnabled);
+    sendSegment('track', {
+      event: SegmentEvent.featureToggling,
+      properties: {
+        type: `feature: ${featureItem.name}`,
+        action: `toggling from: ${isCurrentlyEnabled} to ${!isCurrentlyEnabled}`,
+      },
+    });
   };
   const handleSelection = (event: ChangeEvent<HTMLInputElement>) => {
     const { name } = event.target;
+    const currentVariant = selected;
     setSelected(name);
+    sendSegment('track', {
+      event: SegmentEvent.featureVariantSelecting,
+      properties: {
+        type: `feature: ${featureItem.name}`,
+        action: `selecting variant from: ${currentVariant} to ${name}`,
+      },
+    });
   };
 
   useEffect(() => {
-    selectFeature({
+    const feature = {
       name: featureItem.name,
       isEnabled: enabled,
       variant: selected,
-    });
+    };
+
+    selectFeature(feature);
   }, [selectFeature, selected, enabled, featureItem.name]);
 
   return (
