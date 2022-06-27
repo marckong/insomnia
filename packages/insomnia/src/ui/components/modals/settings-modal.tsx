@@ -13,6 +13,7 @@ import { Button } from '../base/button';
 import { Modal } from '../base/modal';
 import { ModalBody } from '../base/modal-body';
 import { ModalHeader } from '../base/modal-header';
+import { FeatureManager } from '../feature/feature-manager';
 import { Account } from '../settings/account';
 import { General } from '../settings/general';
 import { ImportExport } from '../settings/import-export';
@@ -102,6 +103,9 @@ export class UnconnectedSettingsModal extends PureComponent<Props, State> {
               <Tab tabIndex="-1">
                 <Button value="Plugins">Plugins</Button>
               </Tab>
+              <Tab tabIndex="-1">
+                <Button value="Features">Features</Button>
+              </Tab>
             </TabList>
             <TabPanel className="react-tabs__tab-panel pad scrollable">
               <General />
@@ -125,6 +129,9 @@ export class UnconnectedSettingsModal extends PureComponent<Props, State> {
             </TabPanel>
             <TabPanel className="react-tabs__tab-panel pad scrollable">
               <Plugins settings={settings} />
+            </TabPanel>
+            <TabPanel className="react-tabs__tab-panel pad scrollable">
+              <FeatureManager />
             </TabPanel>
           </Tabs>
         </ModalBody>

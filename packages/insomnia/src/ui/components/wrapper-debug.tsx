@@ -14,6 +14,7 @@ import { selectSidebarChildren, selectSidebarFilter } from '../redux/sidebar-sel
 import { EnvironmentsDropdown } from './dropdowns/environments-dropdown';
 import { SyncDropdown } from './dropdowns/sync-dropdown';
 import { ErrorBoundary } from './error-boundary';
+import { Feature, FeatureVariant } from './feature/feature';
 import { showCookiesModal } from './modals/cookies-modal';
 import { PageLayout } from './page-layout';
 import { GrpcRequestPane } from './panes/grpc-request-pane';
@@ -217,6 +218,41 @@ class UnconnectedWrapperDebug extends PureComponent<Props> {
 
     return (
       <ErrorBoundary showAlert>
+        <Feature name='someFeature'>
+          <FeatureVariant variant='control'>
+            <div
+              style={{
+                backgroundColor: 'red',
+                height: 100,
+                width: '100%',
+              }}
+            >
+              Control
+            </div>
+          </FeatureVariant>
+          <FeatureVariant variant='variant1'>
+            <div
+              style={{
+                backgroundColor: 'blue',
+                height: 100,
+                width: '100%',
+              }}
+            >
+              Variant 1
+            </div>
+          </FeatureVariant>
+          <FeatureVariant variant='variant2'>
+            <div
+              style={{
+                backgroundColor: 'grey',
+                height: 100,
+                width: '100%',
+              }}
+            >
+              Variant 2
+            </div>
+          </FeatureVariant>
+        </Feature>
         <RequestPane
           downloadPath={responseDownloadPath}
           environmentId={activeEnvironment ? activeEnvironment._id : ''}
