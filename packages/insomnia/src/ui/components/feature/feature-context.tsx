@@ -11,10 +11,12 @@ export interface FeatureData<Name extends string, Variant extends string> {
 interface UseFeatureContext {
   loadFeature(name: string): Promise<FeatureData<string, string>>;
   selectFeature(feature: FeatureData<string, string>): void;
+  features: Record<string, FeatureData<string, string>>;
 }
 const FeatureContext = createContext<UseFeatureContext>({
   loadFeature: async (name: string) => ({ name, isEnabled: false, variant: '' }),
   selectFeature: () => {},
+  features: {},
 });
 const { Provider } = FeatureContext;
 
@@ -36,7 +38,15 @@ const FeatureProvider: FunctionComponent<Props> = ({ children }): ReactElement =
     return features[name];
   }, [features]);
   return (
-    <Provider value={{ loadFeature, selectFeature }}>{children}</Provider>
+    <Provider
+      value={{
+        features,
+        loadFeature,
+        selectFeature,
+      }}
+    >
+      {children}
+    </Provider>
   );
 };
 

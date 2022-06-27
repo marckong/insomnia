@@ -16,10 +16,12 @@ interface FeatureItem {
 }
 interface Props {
   featureItem: FeatureItem;
+  enabled?: boolean;
+  variant?: string;
 }
-const FeatureCheckbox: FunctionComponent<Props> = ({ featureItem }): ReactElement => {
-  const [selected, setSelected] = useState('control');
-  const [enabled, setEnabled] = useState(false);
+const FeatureCheckbox: FunctionComponent<Props> = ({ enabled: alreadyEnabled, variant, featureItem }): ReactElement => {
+  const [selected, setSelected] = useState(variant ?? 'control');
+  const [enabled, setEnabled] = useState(Boolean(alreadyEnabled));
   const { selectFeature } = useContext(FeatureContext);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEnabled = (_: ChangeEvent<HTMLInputElement>) => {
@@ -91,10 +93,16 @@ const FeatureCheckbox: FunctionComponent<Props> = ({ featureItem }): ReactElemen
 };
 
 export const FeatureManager: FunctionComponent = (): ReactElement => {
+  const { features: loadedFeatures } = useContext(FeatureContext);
   return (
     <>
       {features.map(feature => (
-        <FeatureCheckbox key={feature.name} featureItem={feature} />
+        <FeatureCheckbox
+          key={feature.name}
+          enabled={loadedFeatures[feature.name]?.isEnabled}
+          variant={loadedFeatures[feature.name]?.variant}
+          featureItem={feature}
+        />
       ))}
     </>
   );
