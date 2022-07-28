@@ -1,99 +1,143 @@
-import React, { cloneElement, useContext } from 'react';
-import { Children, isValidElement, PropsWithChildren, ReactElement, ReactNode, useRef, useState } from 'react';
+import React, { ButtonHTMLAttributes, cloneElement } from 'react';
+import { Children, isValidElement, ReactElement, ReactNode, useRef, useState } from 'react';
+import styled from 'styled-components';
 
-import { Dropdown } from './dropdown/dropdown';
+import { Dropdown, DropdownHandle } from './dropdown/dropdown';
 import { DropdownButton } from './dropdown/dropdown-button';
 import { DropdownItem } from './dropdown/dropdown-item';
 
-interface UseSplitButton {
-  selected: number;
-  disabled: boolean;
-  selectButton(index: number): void;
-}
-const SplitButtonContext = React.createContext<UseSplitButton | undefined>(undefined);
-function useSplitButton(): UseSplitButton {
-  const context = useContext(SplitButtonContext);
-  if (context === undefined) {
-    throw new Error('useSplitButton must be used within <SplitButton />');
-  }
-  return context;
-}
+const OptionsDropdown = styled(Dropdown)({
+  display: 'flex',
+  paddingRight: 'var(--padding-xs)',
+  paddingLeft: 'var(--padding-xs)',
+  textAlign: 'center',
+  borderLeft: '1px solid var(--hl-md)',
+});
+const PrimaryButton = styled('button')({
+  paddingRight: 'var(--padding-md)',
+  paddingLeft: 'var(--padding-md)',
+  textAlign: 'center',
+  color: 'var(--color-font-surprise)',
+});
 
-function mapChildren(children: ReactNode, disabled: boolean): ReactElement[] {
+// @TODO: this should be read from ThemeContext.Provider
+const ColorMap: Record<ButtonColor, string> = {
+  'primary': 'var(--color-surprise)',
+};
+
+const Container = styled('div')(({ color }: { color: ButtonColor }) => ({
+  display: 'flex',
+  color: 'white',
+  backgroundColor: ColorMap[color],
+}));
+
+function mapButtons(children: ReactNode, disabled: boolean): ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>[] {
   return Children
     .toArray(children)
     .filter(isValidElement)
-    .filter((child: ReactElement) => child.type === 'button')
-    .map((child: ReactElement) => cloneElement(child, { ...child.props, disabled: child.props.disabled || disabled }));
+    .filter((child: ReactElement) => {
+      if (!child.props.name) {
+        throw new Error('<button /> should have the "name" attribute');
+      }
+
+      const isButton = child.type === 'button';
+      if (!isButton) {
+        throw new Error('<SplitButton /> should only have <button /> in its children');
+      }
+      return isButton;
+    })
+    .map((child: ReactElement) => {
+      const props = {
+        ...child.props,
+        // disable when an individual button option has to be disabled or disable ALL when the split button itself needs to be disabled
+        disabled: child.props.disabled || disabled,
+      };
+      return cloneElement(child, props);
+    });
 }
 
-const SplitGroup = ({ children }: { children: ReactElement[] }) => {
-  const { selected, selectButton, disabled } = useSplitButton();
-  const dropdownRef = useRef<Dropdown>(null);
-  const dropdowns = children.map((child: ReactElement, index: number) => {
-    const { onClick: onButtonClick } = child.props;
+function mapOptions(
+  buttons:  ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>[],
+  disabled: boolean,
+  buttonIndex: number,
+  selectButton: (index: number) => void,
+): ReactElement[] {
+  return buttons.map((child: ReactElement, index: number) => {
+    const props = {
+      ...child.props,
+      // disable when an individual button option has to be disabled or disable ALL when the split button itself needs to be disabled
+      disabled: child.props.disabled || disabled,
+    };
+
     const onClick = () => {
-      if (index === selected) {
-        onButtonClick();
+      if (index === buttonIndex) {
+        child.props.onClick();
         return;
       }
 
       selectButton(index);
     };
 
+    // TODO: reset the min width for the dropdown item for split button
     return (
-      // TODO: fix this key mapping. Maybe require button to take name attribute and use it?
-      // eslint-disable-next-line react/jsx-key
       <DropdownItem
-        {...child.props}
+        key={child.props.name}
+        {...props}
         onClick={onClick}
-        selected={selected === index}
+        selected={buttonIndex === index}
+        widthUnset
       >
         {child.props.children}
       </DropdownItem>
     );
   });
+}
+
+function mapSplitButtons(
+  children: ReactNode,
+  disabled: boolean,
+  buttonIndex: number,
+  selectButton: (index: number) => void
+): [ReactElement, ReactElement[]] {
+  const buttons = mapButtons(children, disabled);
+  const primaryButton = buttons[buttonIndex];
+  const options = mapOptions(buttons, disabled, buttonIndex, selectButton);
+  return [<PrimaryButton key={primaryButton.props.name} {...primaryButton.props} />, options];
+}
+
+type ButtonColor = 'primary';
+interface Props {
+  disabled?: boolean;
+  buttonIndex?: number;
+  color?: ButtonColor;
+  children: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>[];
+}
+export const SplitButton = ({
+  disabled,
+  buttonIndex: defaultIndex = 0,
+  color = 'primary',
+  children,
+}: Props) => {
+  const dropdownRef = useRef<DropdownHandle>(null);
+  const [buttonIndex, setButtonIndex] = useState<number>(defaultIndex);
+  const [primaryButton, buttonOptions] = mapSplitButtons(children, Boolean(disabled), buttonIndex, setButtonIndex);
   return (
-    <Dropdown key="dropdown" className="tall" right ref={dropdownRef} disabled={disabled}>
-      <DropdownButton
+    <Container color={color}>
+      {primaryButton}
+      <OptionsDropdown
+        className="tall"
+        right
+        ref={dropdownRef}
         disabled={disabled}
-        className="urlbar__send-context"
-        onClick={() => dropdownRef.current?.show()}
       >
-        <i className="fa fa-caret-down" />
-      </DropdownButton>
-      {dropdowns}
-    </Dropdown>
-  );
-};
-
-const SplitButtonWrapper = ({ children }: PropsWithChildren<{ selected?: number }>) => {
-  const { selected, disabled } = useSplitButton();
-  const buttons = mapChildren(children, disabled);
-
-  if (buttons.length < selected + 1) {
-    throw new Error('the button count should be bigger than the selected index');
-  }
-
-  return (
-    <div>
-      {buttons[selected]}
-      <SplitGroup>{buttons}</SplitGroup>
-    </div>
-  );
-};
-
-export const SplitButton = ({ disabled, children, selected: defaultSelected = 0 }: PropsWithChildren<{ disabled?: boolean; selected?: number }>) => {
-  const [selected, setSelected] = useState<number>(defaultSelected);
-  const selectButton = (index: number) => {
-    setSelected(index);
-  };
-
-  // you can use useMemo if performance is concerned, but most likely premature optimization.
-  const value = { selected, disabled: Boolean(disabled), selectButton };
-  return (
-    <SplitButtonContext.Provider value={value}>
-      <SplitButtonWrapper>{children}</SplitButtonWrapper>
-    </SplitButtonContext.Provider>
+        <DropdownButton
+          disabled={disabled}
+          onClick={() => dropdownRef.current?.show()}
+        >
+          <i className="fa fa-caret-down" />
+        </DropdownButton>
+        {buttonOptions}
+      </OptionsDropdown>
+    </Container>
   );
 };

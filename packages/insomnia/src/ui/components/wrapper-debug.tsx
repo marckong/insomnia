@@ -39,6 +39,7 @@ import {
   selectSidebarChildren,
   selectSidebarFilter,
 } from '../redux/sidebar-selectors';
+import { SplitButton } from './base/split-button';
 import { CodeEditor, UnconnectedCodeEditor } from './codemirror/code-editor';
 import { EnvironmentsDropdown } from './dropdowns/environments-dropdown';
 import { SyncDropdown } from './dropdowns/sync-dropdown';
@@ -358,11 +359,49 @@ function usePollingConnectionStatus(requestId?: string) {
 
   return connectionStatus;
 }
+
+interface SendButtonProps {
+  requestId: string;
+  onConnect: () => void;
+  onSend: () => Promise<void>;
+  onClose: () => void;
+}
+const SendButtonForWebSocket: FC<SendButtonProps> = ({ requestId, onConnect, onSend, onClose }) => {
+  // after sending a request this gets set as false for some reason?;
+  const isConnected = usePollingConnectionStatus(requestId);
+  return (
+    <SplitButton>
+      {isConnected && <button name="wsSendButton" onClick={onSend}>Send</button>}
+      {!isConnected && <button name="wsConnectButton" onClick={onConnect}>Connect</button>}
+      <button name="wsCloseButton" onClick={onClose} disabled={!isConnected}>Close</button>
+    </SplitButton>
+  );
+};
+
 const StretchedPaneHeader = styled(PaneHeader)({ '&&': { alignItems: 'stretch' } });
 const WSLeftPanel = ({ request }: { request: Request }) => {
   const isConnected = usePollingConnectionStatus(request._id);
   const editorRef = useRef<UnconnectedCodeEditor>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const { handleRender } = useNunjucks();
+
+  const handleConnection = () => {
+    const url = urlInputRef.current?.value || '';
+    window.main.openWebsocket({ url, requestId: request._id });
+  };
+
+  const handleSend = async () => {
+    const msg = editorRef.current?.getValue() || '';
+    const message = await handleRender(msg);
+    window.main.messageWebsocket({
+      message,
+      requestId: request._id,
+    });
+  };
+
+  const handleClose = () => {
+    window.main.closeWebsocket({ requestId: request._id });
+  };
 
   return (
     <Pane type="request">
@@ -386,32 +425,22 @@ const WSLeftPanel = ({ request }: { request: Request }) => {
             <div className="urlbar__flex__right">
               <input
                 name="url"
+                ref={urlInputRef}
                 defaultValue="wss://ws.postman-echo.com/raw"
                 placeholder="wss://ws.postman-echo.com/raw"
                 style={{ flex: 1, marginLeft: '0.5rem' }}
               />
             </div>
-            <button type="submit" className="urlbar__send-btn">
-              {isConnected ? 'Disconnect' : 'Connect'}
-            </button>
+            <SendButtonForWebSocket
+              requestId={request._id}
+              onConnect={handleConnection}
+              onSend={handleSend}
+              onClose={handleClose}
+            />
           </div>
         </form>
       </StretchedPaneHeader>
-      <form
-        onSubmit={async e => {
-          e.preventDefault();
-          if (!isConnected) {
-            console.warn('Sending message to closed connection');
-            return;
-          }
-          const msg = editorRef.current?.getValue() || '';
-          const message = await handleRender(msg);
-          window.main.messageWebsocket({
-            message,
-            requestId: request._id,
-          });
-        }}
-      >
+      <form>
         <Tabs className={classnames(paneBodyClasses, 'react-tabs')}>
           <div className="tab-action-wrapper">
             <div className="tab-action-tabs">
@@ -421,14 +450,6 @@ const WSLeftPanel = ({ request }: { request: Request }) => {
                 </Tab>
               </TabList>
             </div>
-
-            <StyledButton
-              type="submit"
-              disabled={!isConnected}
-              className="btn btn--compact btn--clicky margin-sm bg-surprise"
-            >
-              Send <i className="fa fa-arrow-right" />
-            </StyledButton>
           </div>
           <TabPanel className="react-tabs__tab-panel scrollable-container">
             <CodeEditor
@@ -443,11 +464,7 @@ const WSLeftPanel = ({ request }: { request: Request }) => {
     </Pane >
   );
 };
-const StyledButton = styled('button')`
-&:focus,
-&:hover {
-  filter: brightness(0.8);
-}`;
+
 function useEventLogQuery(requestId?: string) {
   const [eventLog, setEventLog] = useState<EventLog>([]);
 
